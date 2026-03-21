@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Approvals{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Doctor Approval Requests</h2>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a>
+</div>
+
+<div class="card dashboard-card">
+    <div class="card-header bg-white">
+        <strong>Doctor Accounts</strong>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Registered</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.full_name }}</td>
+                    <td>{{ doctor.email }}</td>
+                    <td>
+                        {% if doctor.doctor_status == "approved" %}
+                            <span class="badge text-bg-success">approved</span>
+                        {% elif doctor.doctor_status == "pending" %}
+                            <span class="badge text-bg-warning">pending</span>
+                        {% else %}
+                            <span class="badge text-bg-danger">rejected</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ doctor.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-2">
+                            {% if doctor.doctor_status == "approved" %}
+                                <form method="post" action="{{ url_for('admin.reject_doctor', doctor_id=doctor.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+                                </form>
+                            {% elif doctor.doctor_status == "pending" %}
+                                <form method="post" action="{{ url_for('admin.approve_doctor', doctor_id=doctor.id) }}">
+                                    <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                                </form>
+                                <form method="post" action="{{ url_for('admin.reject_doctor', doctor_id=doctor.id) }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Reject</button>
+                                </form>
+                            {% else %}
+                                <form method="post" action="{{ url_for('admin.approve_doctor', doctor_id=doctor.id) }}">
+                                    <button class="btn btn-sm btn-success" type="submit">Approve</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No doctor records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

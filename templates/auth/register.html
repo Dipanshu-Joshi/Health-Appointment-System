@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}MediTech | Register{% endblock %}
+
+{% block content %}
+<div class="auth-page" data-default-view="register">
+	<div class="auth-grid">
+		<section class="auth-left">
+			<div class="auth-brand">MediTech</div>
+			<h1>Smart Health Appointment System</h1>
+			<p>Book appointments, consult doctors via video, and get AI-powered health assistance - all in one platform.</p>
+
+			<div class="auth-feature-list">
+				<div class="auth-feature-box">
+					<h6>Video Consultations</h6>
+					<p>Connect with doctors instantly through secure video calls</p>
+				</div>
+				<div class="auth-feature-box">
+					<h6>Easy Appointment Booking</h6>
+					<p>Schedule and manage appointments effortlessly</p>
+				</div>
+				<div class="auth-feature-box">
+					<h6>AI Health Support</h6>
+					<p>Get quick health guidance from MediBot</p>
+				</div>
+			</div>
+		</section>
+
+		<section class="auth-right">
+			<div class="auth-card">
+				<div class="auth-toggle" role="tablist" aria-label="Auth tabs">
+					<button id="toggle-login" class="auth-toggle-btn" type="button">Login</button>
+					<button id="toggle-register" class="auth-toggle-btn active" type="button">Register</button>
+				</div>
+
+				<form id="login-form" method="post" action="{{ url_for('auth.login') }}" class="d-none" novalidate>
+					<div class="mb-3">
+						<label for="login_email" class="form-label">Email</label>
+						<input type="email" class="form-control" id="login_email" name="email" required>
+					</div>
+					<div class="mb-3">
+						<label for="login_password" class="form-label">Password</label>
+						<input type="password" class="form-control" id="login_password" name="password" required>
+					</div>
+					<button type="submit" class="btn auth-primary-btn w-100">Sign In</button>
+				</form>
+
+				<form id="register-form" method="post" novalidate>
+					<div class="mb-3">
+						<label for="register_full_name" class="form-label">Full Name</label>
+						<input type="text" class="form-control" id="register_full_name" name="full_name" required>
+					</div>
+					<div class="mb-3">
+						<label for="register_email" class="form-label">Email</label>
+						<input type="email" class="form-control" id="register_email" name="email" required>
+					</div>
+					<div class="mb-3">
+						<label for="register_role" class="form-label">Register As</label>
+						<select class="form-select" id="register_role" name="role" required>
+							
+							<option value="patient">Patient</option>
+							<option value="doctor">Doctor</option>
+						</select>
+					</div>
+					<div class="mb-3">
+						<label for="register_password" class="form-label">Password</label>
+						<input type="password" class="form-control" id="register_password" name="password" required>
+					</div>
+					<div class="mb-3">
+						<label for="register_confirm_password" class="form-label">Confirm Password</label>
+						<input type="password" class="form-control" id="register_confirm_password" name="confirm_password" required>
+					</div>
+					<button type="submit" class="btn auth-primary-btn w-100">Create Account</button>
+				</form>
+			</div>
+		</section>
+	</div>
+</div>
+
+<script>
+(() => {
+	const root = document.querySelector('.auth-page');
+	if (!root) {
+		return;
+	}
+
+	const loginBtn = document.getElementById('toggle-login');
+	const registerBtn = document.getElementById('toggle-register');
+	const loginForm = document.getElementById('login-form');
+	const registerForm = document.getElementById('register-form');
+
+	function showLogin() {
+		loginBtn.classList.add('active');
+		registerBtn.classList.remove('active');
+		loginForm.classList.remove('d-none');
+		registerForm.classList.add('d-none');
+	}
+
+	function showRegister() {
+		registerBtn.classList.add('active');
+		loginBtn.classList.remove('active');
+		registerForm.classList.remove('d-none');
+		loginForm.classList.add('d-none');
+	}
+
+	loginBtn.addEventListener('click', showLogin);
+	registerBtn.addEventListener('click', showRegister);
+})();
+</script>
+{% endblock %}

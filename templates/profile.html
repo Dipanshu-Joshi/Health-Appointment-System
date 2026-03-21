@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="saas-card p-4">
+            <h3 class="mb-3">My Profile</h3>
+
+            <div class="d-flex align-items-center gap-3 mb-4">
+                {% if current_user.profile_image %}
+                    <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="Profile image" class="avatar-image">
+                {% else %}
+                    <div class="avatar-circle">{{ current_user.full_name[:1]|upper }}</div>
+                {% endif %}
+                <div>
+                    <div class="fw-semibold">{{ current_user.full_name }}</div>
+                    <div class="text-muted small">{{ current_user.role|title }}</div>
+                </div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" class="row g-3">
+                <div class="col-12">
+                    <label for="full_name" class="form-label">Name</label>
+                    <input type="text" id="full_name" name="full_name" class="form-control" value="{{ current_user.full_name }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" value="{{ current_user.email }}" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Role</label>
+                    <input type="text" class="form-control" value="{{ current_user.role|title }}" disabled>
+                </div>
+                <div class="col-12">
+                    <label for="profile_image" class="form-label">Profile Image</label>
+                    <input type="file" id="profile_image" name="profile_image" class="form-control" accept="image/*">
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

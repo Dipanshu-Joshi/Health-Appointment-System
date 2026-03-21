@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+	<h2 class="page-title mb-0">Patient Dashboard</h2>
+	<div class="d-flex gap-2">
+		<a class="btn btn-primary" href="{{ url_for('patient.approved_doctors') }}">Book Appointment</a>
+	</div>
+</div>
+
+<div class="row g-3 mb-4">
+	<div class="col-md-6 col-xl-3">
+		<div class="metric-card h-100 p-3">
+			<h6 class="text-muted mb-1">Total Appointments</h6>
+			<div class="metric-value">{{ total_appointments }}</div>
+		</div>
+	</div>
+	<div class="col-md-6 col-xl-3">
+		<div class="metric-card h-100 p-3">
+			<h6 class="text-muted mb-1">Pending</h6>
+			<div class="metric-value">{{ pending_count }}</div>
+		</div>
+	</div>
+	<div class="col-md-6 col-xl-3">
+		<div class="metric-card h-100 p-3">
+			<h6 class="text-muted mb-1">Approved</h6>
+			<div class="metric-value">{{ approved_count }}</div>
+		</div>
+	</div>
+	<div class="col-md-6 col-xl-3">
+		<div class="metric-card h-100 p-3">
+			<h6 class="text-muted mb-1">Completed</h6>
+			<div class="metric-value">{{ completed_count }}</div>
+		</div>
+	</div>
+</div>
+
+<div id="appointments" class="saas-card p-3">
+	<ul class="nav dashboard-tabs mb-3" id="patientTabs" role="tablist">
+		<li class="nav-item" role="presentation">
+			<button class="nav-link active" data-bs-toggle="tab" data-bs-target="#patient-upcoming" type="button" role="tab">Upcoming</button>
+		</li>
+		<li class="nav-item" role="presentation">
+			<button class="nav-link" data-bs-toggle="tab" data-bs-target="#patient-past" type="button" role="tab">Past</button>
+		</li>
+	</ul>
+
+	<div class="tab-content">
+		<div class="tab-pane fade show active" id="patient-upcoming" role="tabpanel">
+			{% set state = namespace(has_upcoming=false) %}
+			{% for appointment in appointments %}
+				{% if not appointment.is_past %}
+					{% set state.has_upcoming = true %}
+					<div class="appointment-item-card">
+						<div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+							<div>
+								<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
+								<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+								<div class="small mt-1">Reason: {{ appointment.reason }}</div>
+							</div>
+							<div>
+								{% if appointment.status == "approved" %}
+									<span class="badge text-bg-success">approved</span>
+								{% elif appointment.status == "pending" %}
+									<span class="badge text-bg-warning">pending</span>
+								{% elif appointment.status == "reschedule_requested" %}
+									<span class="badge text-bg-info">reschedule requested</span>
+								{% endif %}
+							</div>
+						</div>
+
+						<div class="appointment-actions mt-3">
+							{% if appointment.call_available %}
+								<a class="btn btn-sm btn-primary" href="{{ url_for('video.video_call', room_id=appointment.room_id) }}">Join Video Call</a>
+							{% elif appointment.status == "approved" %}
+								<span class="small text-muted">Call will be available at scheduled time</span>
+								{% if appointment.remaining_to_call %}
+									<span class="small text-secondary">Available in {{ appointment.remaining_to_call }}</span>
+								{% endif %}
+							{% else %}
+								<span class="small text-muted">Not available</span>
+							{% endif %}
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+			{% if not state.has_upcoming %}
+				<div class="text-muted">No upcoming appointments.</div>
+			{% endif %}
+		</div>
+
+		<div class="tab-pane fade" id="patient-past" role="tabpanel">
+			{% set state = namespace(has_past=false) %}
+			{% for appointment in appointments %}
+				{% if appointment.is_past %}
+					{% set state.has_past = true %}
+					<div class="appointment-item-card d-flex justify-content-between align-items-center">
+						<div>
+							<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
+							<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+						</div>
+						<div>
+							{% if appointment.status == "completed" %}
+								<span class="badge text-bg-secondary">completed</span>
+								<div class="small text-muted mt-1">Appointment Completed</div>
+							{% elif appointment.status == "cancelled" %}
+								<span class="badge text-bg-danger">cancelled</span>
+							{% else %}
+								<span class="badge text-bg-secondary">past</span>
+							{% endif %}
+						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+			{% if not state.has_past %}
+				<div class="text-muted">No past appointments.</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+<a href="{{ url_for('patient.chatbot') }}" class="bot-button" title="Chat with MediBot" aria-label="Chat with MediBot">
+	<img src="{{ url_for('static', filename='assets/bot_img.png') }}" class="bot-avatar-img" alt="MediBot Avatar">
+</a>
+{% endblock %}

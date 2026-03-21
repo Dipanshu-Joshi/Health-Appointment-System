@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}All Appointments{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">All Appointments</h2>
+    <a class="btn btn-outline-secondary" href="{{ url_for('admin.dashboard') }}">Back to Dashboard</a>
+</div>
+
+<div class="card dashboard-card">
+    <div class="card-header bg-white">
+        <strong>Appointment Records</strong>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appointment in appointments %}
+                <tr>
+                    <td>{{ appointment.patient.full_name }}</td>
+                    <td>{{ appointment.doctor.full_name }}</td>
+                    <td>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ appointment.appointment_time.strftime('%H:%M') }}</td>
+                    <td>{{ appointment.reason }}</td>
+                    <td>
+                        {% if appointment.status == "approved" %}
+                            <span class="badge text-bg-success">approved</span>
+                        {% elif appointment.status == "pending" %}
+                            <span class="badge text-bg-warning">pending</span>
+                        {% elif appointment.status == "completed" %}
+                            <span class="badge text-bg-secondary">completed</span>
+                        {% elif appointment.status == "cancelled" %}
+                            <span class="badge text-bg-danger">cancelled</span>
+                        {% elif appointment.status == "reschedule_requested" %}
+                            <span class="badge text-bg-info">reschedule requested</span>
+                        {% else %}
+                            <span class="badge text-bg-dark">{{ appointment.status }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No appointments found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

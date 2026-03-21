@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="page-title mb-3">Admin Dashboard</h2>
+
+<div class="row g-3 mb-4">
+	<div class="col-md-6">
+		<div class="card dashboard-card h-100 border-start border-4 border-warning">
+			<div class="card-body">
+				<h5 class="card-title">Pending Doctor Requests</h5>
+				<p class="metric-value mb-0">{{ pending_count }}</p>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="card dashboard-card h-100 border-start border-4 border-primary">
+			<div class="card-body">
+				<h5 class="card-title">Total Doctors</h5>
+				<p class="metric-value mb-0">{{ total_doctors }}</p>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="card dashboard-card h-100 border-start border-4 border-success">
+			<div class="card-body">
+				<h5 class="card-title">Total Appointments</h5>
+				<p class="metric-value mb-0">{{ appointment_count }}</p>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="card dashboard-card h-100 border-start border-4 border-info">
+			<div class="card-body">
+				<h5 class="card-title">Pending Appointments</h5>
+				<p class="metric-value mb-0">{{ pending_appointments }}</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="d-flex gap-2">
+	<a class="btn btn-primary" href="{{ url_for('admin.doctor_approvals') }}">Manage Doctor Approvals</a>
+	<a class="btn btn-outline-primary" href="{{ url_for('admin.all_appointments') }}">View All Appointments</a>
+</div>
+{% endblock %}

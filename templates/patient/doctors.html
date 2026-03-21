@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Approved Doctors{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Choose a Doctor</h2>
+    <a class="btn btn-outline-secondary" href="{{ url_for('patient.dashboard') }}">Back to Dashboard</a>
+</div>
+
+<div class="doctor-grid">
+    {% for doctor in doctors %}
+    <div class="doctor-card">
+        <div class="d-flex align-items-center gap-3 mb-3">
+            {% if doctor.profile_image %}
+                <img src="{{ url_for('static', filename=doctor.profile_image) }}" alt="Doctor image" class="avatar-image">
+            {% else %}
+                <div class="avatar-circle">{{ doctor.full_name[:1]|upper }}</div>
+            {% endif %}
+            <div>
+                <h5 class="mb-1">Dr. {{ doctor.full_name }}</h5>
+                <div class="doctor-specialty">General Physician</div>
+            </div>
+        </div>
+        <div class="small text-muted mb-3">{{ doctor.email }}</div>
+        <a class="btn btn-primary w-100" href="{{ url_for('patient.book_appointment', doctor_id=doctor.id) }}">Book Appointment</a>
+    </div>
+    {% else %}
+    <div class="text-muted">No approved doctors are available right now.</div>
+    {% endfor %}
+</div>
+{% endblock %}

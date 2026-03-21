@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}MediBot AI Assistant{% endblock %}
+
+{% block content %}
+<div id="chat-shell" class="chat-shell">
+    <header class="chat-header">
+        <div>
+            <h2 class="chat-title">MediBot AI Assistant</h2>
+            <p class="chat-disclaimer"><strong>Disclaimer:</strong> {{ disclaimer }}</p>
+        </div>
+        <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary btn-sm">Back</a>
+    </header>
+
+    <div id="chat-history" class="chat-messages">
+        {% if conversation %}
+            {% for item in conversation %}
+                <div class="chat-row {% if item.role == 'user' %}chat-row-user{% else %}chat-row-bot{% endif %}">
+                    <div class="chat-bubble {% if item.role == 'user' %}chat-bubble-user{% else %}chat-bubble-bot{% endif %}">
+                        <div class="small fw-semibold mb-1 d-flex align-items-center gap-2">
+                            <span>{% if item.role == 'user' %}You{% else %}MediBot{% endif %}</span>
+                            {% if item.role != 'user' and item.model %}
+                                <span class="chat-model-badge">{{ 'GPT-4' if item.model == 'deepseek' else 'GEMINI 2.5' if item.model == 'gemini' else item.model|upper }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="chat-message-body" data-role="{{ item.role }}">{{ item.content }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div id="chat-empty-state" class="chat-empty-state">
+                Start the conversation by asking a health question.
+            </div>
+        {% endif %}
+    </div>
+
+    <form id="chat-form" method="post" enctype="multipart/form-data" class="chat-input-bar">
+        <div class="chat-tools">
+            <select id="model-select" name="model" class="form-select form-select-sm chat-model-select" aria-label="Select chatbot model">
+                <option value="deepseek" {% if selected_model == 'deepseek' %}selected{% endif %}>GPT-4 (Default)</option>
+                <option value="gemini" {% if selected_model == 'gemini' %}selected{% endif %}>Gemini 2.5 Flash</option>
+            </select>
+
+            <label id="image-upload-trigger" for="chat-image" class="btn btn-outline-secondary btn-sm {% if selected_model != 'gemini' %}d-none{% endif %}">
+                Upload Image
+            </label>
+            <input id="chat-image" name="image" type="file" accept="image/*" class="d-none">
+            <span id="image-file-name" class="chat-image-name"></span>
+        </div>
+
+        <div class="chat-input-wrap">
+            <textarea id="message" name="message" class="chat-input" rows="1" placeholder="Ask a health question..."></textarea>
+            <button id="send-button" type="submit" name="action" value="send" class="chat-send-btn">Send</button>
+        </div>
+        <button id="clear-button" type="button" class="btn btn-outline-danger btn-sm">Clear History</button>
+    </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+(() => {
+    const chatForm = document.getElementById("chat-form");
+    const chatHistory = document.getElementById("chat-history");
+    const messageInput = document.getElementById("message");
+    const sendButton = document.getElementById("send-button");
+    const clearButton = document.getElementById("clear-button");
+    const modelSelect = document.getElementById("model-select");
+    const chatImageInput = document.getElementById("chat-image");
+    const imageUploadTrigger = document.getElementById("image-upload-trigger");
+    const imageFileName = document.getElementById("image-file-name");
+    const endpoint = "{{ url_for('patient.chatbot') }}";
+
+    function sanitizeHtml(rawHtml) {
+        const allowedTags = new Set([
+            "P", "BR", "STRONG", "EM", "UL", "OL", "LI", "CODE", "PRE", "BLOCKQUOTE", "A"
+        ]);
+
+        const wrapper = document.createElement("div");
+        wrapper.innerHTML = rawHtml;
+
+        const nodes = wrapper.querySelectorAll("*");
+        for (const node of nodes) {
+            if (!allowedTags.has(node.tagName)) {
+                const textNode = document.createTextNode(node.textContent || "");
+                node.replaceWith(textNode);
+                continue;
+            }
+
+            for (const attr of [...node.attributes]) {
+                const keepHref = node.tagName === "A" && attr.name === "href";
+                if (!keepHref) {
+                    node.removeAttribute(attr.name);
+                }
+            }
+
+            if (node.tagName === "A") {
+                const href = node.getAttribute("href") || "";
+                const isSafe = href.startsWith("http://") || href.startsWith("https://") || href.startsWith("mailto:");
+                if (!isSafe) {
+                    node.removeAttribute("href");
+                }
+                node.setAttribute("target", "_blank");
+                node.setAttribute("rel", "noopener noreferrer");
+            }
+        }
+
+        return wrapper.innerHTML;
+    }
+
+    function renderMarkdownToSafeHtml(text) {
+        const rawHtml = marked.parse(text || "");
+        return sanitizeHtml(rawHtml);
+    }
+
+    function renderExistingAssistantMessages() {
+        const nodes = chatHistory.querySelectorAll('.chat-message-body[data-role="assistant"]');
+        for (const node of nodes) {
+            node.innerHTML = renderMarkdownToSafeHtml(node.textContent || "");
+        }
+    }
+
+    function scrollToLatest() {
+        chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: "smooth" });
+    }
+
+    function removeEmptyState() {
+        const emptyState = document.getElementById("chat-empty-state");
+        if (emptyState) {
+            emptyState.remove();
+        }
+    }
+
+    function appendBubble(role, content, typing = false, imagePreviewUrl = "", modelUsed = "") {
+        removeEmptyState();
+
+        const row = document.createElement("div");
+        row.className = `chat-row ${role === "user" ? "chat-row-user" : "chat-row-bot"}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = `chat-bubble ${role === "user" ? "chat-bubble-user" : "chat-bubble-bot"}`;
+        if (typing) {
+            bubble.classList.add("typing");
+        }
+
+        const title = document.createElement("div");
+        title.className = "small fw-semibold mb-1 d-flex align-items-center gap-2";
+
+        const titleText = document.createElement("span");
+        titleText.textContent = role === "user" ? "You" : "MediBot";
+        title.appendChild(titleText);
+
+        if (role === "assistant" && modelUsed) {
+            const modelBadge = document.createElement("span");
+            modelBadge.className = "chat-model-badge";
+            const normalizedModel = String(modelUsed).toLowerCase();
+            if (normalizedModel === "deepseek") {
+                modelBadge.textContent = "GPT-4";
+            } else if (normalizedModel === "gemini") {
+                modelBadge.textContent = "GEMINI 2.5";
+            } else {
+                modelBadge.textContent = String(modelUsed).toUpperCase();
+            }
+            title.appendChild(modelBadge);
+        }
+
+        const text = document.createElement("div");
+        text.className = "chat-message-body";
+        text.dataset.role = role;
+        if (role === "assistant" && !typing) {
+            text.innerHTML = renderMarkdownToSafeHtml(content);
+        } else {
+            text.textContent = content;
+        }
+
+        if (imagePreviewUrl) {
+            const preview = document.createElement("img");
+            preview.className = "chat-upload-preview";
+            preview.src = imagePreviewUrl;
+            preview.alt = "Uploaded image preview";
+            preview.loading = "lazy";
+            text.appendChild(preview);
+        }
+
+        bubble.appendChild(title);
+        bubble.appendChild(text);
+        row.appendChild(bubble);
+        chatHistory.appendChild(row);
+        scrollToLatest();
+
+        return row;
+    }
+
+    function showErrorMessage() {
+        appendBubble(
+            "assistant",
+            "I could not send your message right now. Please try again shortly."
+        );
+    }
+
+    function updateImageUploadVisibility() {
+        const geminiSelected = modelSelect.value === "gemini";
+        imageUploadTrigger.classList.toggle("d-none", !geminiSelected);
+        if (!geminiSelected) {
+            chatImageInput.value = "";
+            imageFileName.textContent = "";
+        }
+    }
+
+    async function sendChatMessage(message, model, imageFile) {
+        const formData = new FormData();
+        formData.append("action", "send");
+        formData.append("message", message);
+        formData.append("model", model);
+        if (imageFile) {
+            formData.append("image", imageFile);
+        }
+
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        });
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to send message.");
+        }
+        return data;
+    }
+
+    async function clearChatHistory() {
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({ action: "clear" })
+        });
+
+        if (!response.ok) {
+            throw new Error("Unable to clear chat history.");
+        }
+
+        chatHistory.innerHTML = "";
+        const emptyState = document.createElement("div");
+        emptyState.id = "chat-empty-state";
+        emptyState.className = "chat-empty-state";
+        emptyState.textContent = "Start the conversation by asking a health question.";
+        chatHistory.appendChild(emptyState);
+    }
+
+    messageInput.addEventListener("input", () => {
+        messageInput.style.height = "auto";
+        messageInput.style.height = `${Math.min(messageInput.scrollHeight, 180)}px`;
+    });
+
+    messageInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            chatForm.requestSubmit();
+        }
+    });
+
+    chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+        const model = modelSelect.value;
+        const uploadedImage = model === "gemini" ? chatImageInput.files[0] : null;
+        if (!message && !uploadedImage) {
+            return;
+        }
+
+        let userBubbleText = message;
+        let imagePreviewUrl = "";
+        if (!userBubbleText && uploadedImage) {
+            userBubbleText = `Uploaded image: ${uploadedImage.name}`;
+        }
+        if (uploadedImage) {
+            imagePreviewUrl = URL.createObjectURL(uploadedImage);
+        }
+
+        appendBubble("user", userBubbleText, false, imagePreviewUrl);
+        messageInput.value = "";
+        messageInput.style.height = "auto";
+        messageInput.focus();
+
+        sendButton.disabled = true;
+        clearButton.disabled = true;
+
+        const typingRow = appendBubble("assistant", "", true);
+
+        try {
+            const data = await sendChatMessage(message, model, uploadedImage);
+            typingRow.remove();
+            appendBubble("assistant", data.response || "No response received.", false, "", data.model_used || data.model || "");
+            chatImageInput.value = "";
+            imageFileName.textContent = "";
+        } catch (error) {
+            typingRow.remove();
+            showErrorMessage();
+        } finally {
+            sendButton.disabled = false;
+            clearButton.disabled = false;
+        }
+    });
+
+    clearButton.addEventListener("click", async () => {
+        clearButton.disabled = true;
+        sendButton.disabled = true;
+
+        try {
+            await clearChatHistory();
+        } catch (error) {
+            showErrorMessage();
+        } finally {
+            clearButton.disabled = false;
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+    });
+
+    modelSelect.addEventListener("change", updateImageUploadVisibility);
+    chatImageInput.addEventListener("change", () => {
+        const file = chatImageInput.files[0];
+        imageFileName.textContent = file ? file.name : "";
+    });
+
+    updateImageUploadVisibility();
+    renderExistingAssistantMessages();
+    scrollToLatest();
+})();
+</script>
+{% endblock %}

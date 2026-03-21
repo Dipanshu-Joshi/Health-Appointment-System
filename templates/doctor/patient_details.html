@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="page-title mb-0">Patient Details</h2>
+    <a href="{{ url_for('doctor.dashboard') }}" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<div class="saas-card p-4">
+    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+        {% if appointment.patient.profile_image %}
+            <img src="{{ url_for('static', filename=appointment.patient.profile_image) }}" alt="Patient image" class="avatar-image">
+        {% else %}
+            <div class="avatar-circle">{{ appointment.patient.full_name[:1]|upper }}</div>
+        {% endif %}
+
+        <div>
+            <h4 class="mb-1">{{ appointment.patient.full_name }}</h4>
+            <div class="text-muted">{{ appointment.patient.email }}</div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="small text-muted">Role</div>
+            <div>{{ appointment.patient.role|title }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Appointment Date</div>
+            <div>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Appointment Time</div>
+            <div>{{ appointment.appointment_time.strftime('%H:%M') }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Status</div>
+            <div>{{ appointment.status.replace('_', ' ')|title }}</div>
+        </div>
+        <div class="col-12">
+            <div class="small text-muted">Reason</div>
+            <div>{{ appointment.reason }}</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Video Consultation</title>
+    <style>
+        html, body {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+            background: #0f141a;
+        }
+
+        .video-wrap {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            z-index: 2;
+            text-decoration: none;
+            background: rgba(15, 20, 26, 0.8);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+
+        iframe {
+            border: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-wrap">
+        <a class="back-link" href="{{ back_url }}">Back to Dashboard</a>
+        <iframe
+            src="https://meet.jit.si/{{ room_id }}"
+            allow="camera; microphone; fullscreen"
+            title="Jitsi Video Consultation"
+        ></iframe>
+    </div>
+</body>
+</html>

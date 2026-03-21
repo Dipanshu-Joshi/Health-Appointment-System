@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center g-3">
+    <div class="col-lg-4">
+        <div class="saas-card p-4 h-100">
+            <h5 class="mb-3">Doctor</h5>
+            <div class="d-flex align-items-center gap-3">
+                {% if doctor.profile_image %}
+                    <img src="{{ url_for('static', filename=doctor.profile_image) }}" alt="Doctor image" class="avatar-image">
+                {% else %}
+                    <div class="avatar-circle">{{ doctor.full_name[:1]|upper }}</div>
+                {% endif %}
+                <div>
+                    <div class="fw-semibold">Dr. {{ doctor.full_name }}</div>
+                    <div class="small text-muted">General Physician</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="saas-card p-4">
+            <h2 class="mb-1">Book Appointment</h2>
+            <p class="text-muted">Choose your preferred slot and describe your concern.</p>
+
+            <form method="post" novalidate class="needs-validation">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="appointment_date" class="form-label">Date</label>
+                        <input type="date" id="appointment_date" name="appointment_date" class="form-control" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="appointment_time" class="form-label">Time</label>
+                        <input type="time" id="appointment_time" name="appointment_time" class="form-control" required>
+                    </div>
+
+                    <div class="col-12">
+                        <label for="reason" class="form-label">Reason</label>
+                        <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-success">Confirm Booking</button>
+                    <a href="{{ url_for('patient.approved_doctors') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
