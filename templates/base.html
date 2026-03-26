@@ -67,6 +67,16 @@
     <main class="{% if auth_screen %}auth-main{% else %}container py-4{% endif %}">
 {% endif %}
 
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="flash-stack" aria-live="polite" aria-atomic="true">
+            {% for category, message in messages %}
+                <div class="flash-message flash-tile alert alert-{{ category }}" role="alert">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
     {% block content %}{% endblock %}
 
 </main>
@@ -94,5 +104,22 @@
 {% endif %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+window.addEventListener("load", () => {
+    const alerts = document.querySelectorAll(".flash-message");
+    if (!alerts.length) {
+        return;
+    }
+
+    alerts.forEach((alert, index) => {
+        setTimeout(() => {
+            alert.classList.add("fade-out");
+            setTimeout(() => {
+                alert.remove();
+            }, 280);
+        }, 2500 + index * 140);
+    });
+});
+</script>
 </body>
 </html>

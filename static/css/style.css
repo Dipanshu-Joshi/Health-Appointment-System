@@ -98,11 +98,64 @@ body {
 }
 
 .flash-message {
-    transition: opacity 0.25s ease;
+    transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
 .flash-message.fade-out {
     opacity: 0;
+    transform: translateX(18px);
+}
+
+.flash-stack {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 2200;
+    width: min(360px, calc(100vw - 1.5rem));
+    display: grid;
+    gap: 0.65rem;
+}
+
+.flash-tile {
+    margin: 0;
+    border: 0;
+    border-radius: 12px;
+    padding: 0.78rem 0.95rem;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    backdrop-filter: blur(2px);
+    animation: flash-enter 0.26s ease;
+}
+
+.flash-tile.alert-success {
+    background: #e8f5ef;
+    color: #0f5132;
+}
+
+.flash-tile.alert-danger,
+.flash-tile.alert-error {
+    background: #f8e4e4;
+    color: #7b1f1f;
+}
+
+.flash-tile.alert-warning {
+    background: #fff3d6;
+    color: #7a5a00;
+}
+
+.flash-tile.alert-info {
+    background: #e2f0f4;
+    color: #0f4c5c;
+}
+
+@keyframes flash-enter {
+    from {
+        opacity: 0;
+        transform: translateX(18px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
 }
 
 .app-shell {
@@ -815,6 +868,12 @@ body {
 }
 
 @media (max-width: 768px) {
+    .flash-stack {
+        top: 0.75rem;
+        right: 0.75rem;
+        width: calc(100vw - 1.5rem);
+    }
+
     .app-sidebar {
         display: none;
     }
