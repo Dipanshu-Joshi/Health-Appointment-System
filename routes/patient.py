@@ -6,6 +6,7 @@ from flask_login import current_user, login_required
 from app import db
 from chatbot.rules import DEFAULT_MODEL, DISCLAIMER, get_bot_response, normalize_model_choice
 from models import Appointment, User
+from utils.timezone_utils import UTC, combine_utc_datetime, ist_input_to_utc
 
 patient_bp = Blueprint("patient", __name__, url_prefix="/patient")
 
@@ -33,19 +34,22 @@ def dashboard():
         .all()
     )
 
-    now = datetime.now()
+    now_utc = datetime.now(UTC)
     for appointment in appointments:
-        appointment.scheduled_at = datetime.combine(appointment.appointment_date, appointment.appointment_time)
+        appointment.scheduled_at = combine_utc_datetime(
+            appointment.appointment_date,
+            appointment.appointment_time,
+        )
         # Keep approved/pending items in Upcoming so patients can still join when time arrives.
         appointment.is_past = appointment.status in ["completed", "cancelled"]
         appointment.call_available = (
             appointment.status == "approved"
             and bool(appointment.room_id)
-            and now >= appointment.scheduled_at
+            and now_utc >= appointment.scheduled_at
         )
         appointment.remaining_to_call = ""
-        if appointment.status == "approved" and appointment.scheduled_at > now:
-            seconds_left = int((appointment.scheduled_at - now).total_seconds())
+        if appointment.status == "approved" and appointment.scheduled_at > now_utc:
+            seconds_left = int((appointment.scheduled_at - now_utc).total_seconds())
             appointment.remaining_to_call = _format_remaining_seconds(seconds_left)
 
     total_appointments = len(appointments)
@@ -97,8 +101,7 @@ def book_appointment(doctor_id: int):
             return render_template("patient/book_appointment.html", doctor=doctor)
 
         try:
-            appointment_date = datetime.strptime(appointment_date_raw, "%Y-%m-%d").date()
-            appointment_time = datetime.strptime(appointment_time_raw, "%H:%M").time()
+            utc_time = ist_input_to_utc(appointment_date_raw, appointment_time_raw)
         except ValueError:
             flash("Please enter a valid date and time.", "danger")
             return render_template("patient/book_appointment.html", doctor=doctor)
@@ -106,8 +109,8 @@ def book_appointment(doctor_id: int):
         appointment = Appointment(
             patient_id=current_user.id,
             doctor_id=doctor.id,
-            appointment_date=appointment_date,
-            appointment_time=appointment_time,
+            appointment_date=utc_time.date(),
+            appointment_time=utc_time.time().replace(second=0, microsecond=0),
             reason=reason,
             status="pending",
         )

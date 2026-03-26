@@ -57,7 +57,7 @@
 						<div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
 							<div>
 								<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
-								<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+								<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 								<div class="small mt-1">Reason: {{ appointment.reason }}</div>
 							</div>
 							<div>
@@ -99,7 +99,7 @@
 					<div class="appointment-item-card d-flex justify-content-between align-items-center">
 						<div>
 							<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
-							<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+							<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 						</div>
 						<div>
 							{% if appointment.status == "completed" %}

@@ -29,11 +29,11 @@
         </div>
         <div class="col-md-6">
             <div class="small text-muted">Appointment Date</div>
-            <div>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</div>
+            <div>{{ format_appointment_ist_date(appointment.appointment_date, appointment.appointment_time) }} IST</div>
         </div>
         <div class="col-md-6">
             <div class="small text-muted">Appointment Time</div>
-            <div>{{ appointment.appointment_time.strftime('%H:%M') }}</div>
+            <div>{{ format_appointment_ist_time(appointment.appointment_date, appointment.appointment_time) }} IST</div>
         </div>
         <div class="col-md-6">
             <div class="small text-muted">Status</div>

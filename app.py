@@ -8,6 +8,11 @@ from sqlalchemy import text
 from werkzeug.security import generate_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from utils.timezone_utils import (
+    format_appointment_ist,
+    format_appointment_ist_date,
+    format_appointment_ist_time,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
@@ -51,6 +56,20 @@ def create_app() -> Flask:
     @login_manager.user_loader
     def load_user(user_id: str):
         return User.query.get(int(user_id))
+
+    @app.context_processor
+    def inject_time_helpers():
+        return {
+            "format_appointment_ist": format_appointment_ist,
+            "format_appointment_ist_date": format_appointment_ist_date,
+            "format_appointment_ist_time": format_appointment_ist_time,
+        }
+
+    app.jinja_env.globals.update(
+        format_appointment_ist=format_appointment_ist,
+        format_appointment_ist_date=format_appointment_ist_date,
+        format_appointment_ist_time=format_appointment_ist_time,
+    )
 
     # Register blueprints for modular route organization.
     app.register_blueprint(auth_bp)

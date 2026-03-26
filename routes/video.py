@@ -4,6 +4,7 @@ from flask import Blueprint, flash, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
 from models import Appointment
+from utils.timezone_utils import UTC, combine_utc_datetime
 
 video_bp = Blueprint("video", __name__)
 
@@ -22,8 +23,8 @@ def video_call(room_id: str):
         flash("You are not authorized to access this video consultation.", "danger")
         return redirect(url_for("dashboard"))
 
-    scheduled_at = datetime.combine(appointment.appointment_date, appointment.appointment_time)
-    if datetime.now() < scheduled_at:
+    scheduled_at = combine_utc_datetime(appointment.appointment_date, appointment.appointment_time)
+    if datetime.now(UTC) < scheduled_at:
         flash("Call will be available at scheduled time.", "warning")
         return redirect(url_for("dashboard"))
 

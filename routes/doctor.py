@@ -6,6 +6,7 @@ from flask_login import current_user, login_required
 
 from app import db
 from models import Appointment
+from utils.timezone_utils import UTC, combine_utc_datetime
 
 doctor_bp = Blueprint("doctor", __name__, url_prefix="/doctor")
 
@@ -33,17 +34,20 @@ def dashboard():
         .all()
     )
 
-    now = datetime.now()
+    now_utc = datetime.now(UTC)
     for appointment in appointments:
-        appointment.scheduled_at = datetime.combine(appointment.appointment_date, appointment.appointment_time)
+        appointment.scheduled_at = combine_utc_datetime(
+            appointment.appointment_date,
+            appointment.appointment_time,
+        )
         appointment.call_available = (
             appointment.status == "approved"
             and bool(appointment.room_id)
-            and now >= appointment.scheduled_at
+            and now_utc >= appointment.scheduled_at
         )
         appointment.remaining_to_call = ""
-        if appointment.status == "approved" and appointment.scheduled_at > now:
-            seconds_left = int((appointment.scheduled_at - now).total_seconds())
+        if appointment.status == "approved" and appointment.scheduled_at > now_utc:
+            seconds_left = int((appointment.scheduled_at - now_utc).total_seconds())
             appointment.remaining_to_call = _format_remaining_seconds(seconds_left)
 
     total_appointments = len(appointments)
@@ -96,8 +100,8 @@ def complete_appointment(appointment_id: int):
         flash("Only approved appointments can be marked completed.", "warning")
         return redirect(url_for("doctor.dashboard"))
 
-    scheduled_at = datetime.combine(appointment.appointment_date, appointment.appointment_time)
-    if datetime.now() < scheduled_at:
+    scheduled_at = combine_utc_datetime(appointment.appointment_date, appointment.appointment_time)
+    if datetime.now(UTC) < scheduled_at:
         flash("Appointment can be marked completed after scheduled time.", "warning")
         return redirect(url_for("doctor.dashboard"))
 

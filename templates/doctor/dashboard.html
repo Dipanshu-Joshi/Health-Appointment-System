@@ -58,7 +58,7 @@
 							<div>
 								<h6 class="mb-1">{{ appointment.patient.full_name }}</h6>
 								<div class="text-muted small">{{ appointment.patient.email }}</div>
-								<div class="small mt-1">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+								<div class="small mt-1">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 								<div class="small mt-1">Reason: {{ appointment.reason }}</div>
 							</div>
 							<div>
@@ -112,7 +112,7 @@
 					<div class="appointment-item-card d-flex justify-content-between align-items-center">
 						<div>
 							<h6 class="mb-1">{{ appointment.patient.full_name }}</h6>
-							<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+							<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 						</div>
 						<div class="appointment-actions">
 							<a href="{{ url_for('doctor.patient_details', appointment_id=appointment.id) }}" class="btn btn-sm btn-outline-dark">View Patient Details</a>
@@ -134,7 +134,7 @@
 					<div class="appointment-item-card d-flex justify-content-between align-items-center">
 						<div>
 							<h6 class="mb-1">{{ appointment.patient.full_name }}</h6>
-							<div class="small text-muted">{{ appointment.appointment_date.strftime('%Y-%m-%d') }} at {{ appointment.appointment_time.strftime('%H:%M') }}</div>
+							<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 						</div>
 						<span class="small text-muted">No actions available</span>
 					</div>

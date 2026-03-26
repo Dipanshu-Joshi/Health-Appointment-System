@@ -29,8 +29,8 @@
                 <tr>
                     <td>{{ appointment.patient.full_name }}</td>
                     <td>{{ appointment.doctor.full_name }}</td>
-                    <td>{{ appointment.appointment_date.strftime('%Y-%m-%d') }}</td>
-                    <td>{{ appointment.appointment_time.strftime('%H:%M') }}</td>
+                    <td>{{ format_appointment_ist_date(appointment.appointment_date, appointment.appointment_time) }} IST</td>
+                    <td>{{ format_appointment_ist_time(appointment.appointment_date, appointment.appointment_time) }} IST</td>
                     <td>{{ appointment.reason }}</td>
                     <td>
                         {% if appointment.status == "approved" %}
