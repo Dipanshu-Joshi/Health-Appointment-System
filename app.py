@@ -121,7 +121,11 @@ def create_app() -> Flask:
     return app
 
 
+# WSGI entrypoint for production servers, e.g. `gunicorn app:app`.
+app = create_app()
+
+
 if __name__ == "__main__":
-    flask_app = create_app()
-    # Disable the reloader to avoid a second debug process holding the same port.
-    flask_app.run(debug=True, use_reloader=False)
+    port = int(os.environ.get("PORT", 5000))
+    debug = os.getenv("FLASK_DEBUG", "0") == "1"
+    app.run(host="0.0.0.0", port=port, debug=debug, use_reloader=debug)
