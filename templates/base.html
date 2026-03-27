@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}MediTech Healthcare Platform{% endblock %}</title>
+    <title>{% block title %}healthease Healthcare Platform{% endblock %}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -24,7 +24,7 @@
 
     <div class="app-shell">
         <aside id="appSidebar" class="app-sidebar">
-            <div class="sidebar-brand">MediTech</div>
+            <div class="sidebar-brand">healthease</div>
             <nav class="sidebar-nav">
                 <a class="sidebar-link" href="{{ dashboard_url }}">Dashboard</a>
                 {% if current_user.role == 'patient' %}
@@ -41,7 +41,7 @@
                     <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileSidebar" aria-controls="mobileSidebar">
                         Menu
                     </button>
-                    <div class="app-name">MediTech Healthcare Platform</div>
+                    <div class="app-name">healthease Healthcare Platform</div>
                 </div>
 
                 <a class="profile-chip" href="{{ url_for('profile.profile') }}">
@@ -60,7 +60,7 @@
     {% if not auth_screen %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
         <div class="container">
-            <a class="navbar-brand mx-auto" href="{{ url_for('home') }}">MediTech</a>
+            <a class="navbar-brand mx-auto" href="{{ url_for('home') }}">healthease</a>
         </div>
     </nav>
     {% endif %}
@@ -87,7 +87,7 @@
 
     <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileSidebar" aria-labelledby="mobileSidebarLabel">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="mobileSidebarLabel">MediTech</h5>
+            <h5 class="offcanvas-title" id="mobileSidebarLabel">healthease</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
