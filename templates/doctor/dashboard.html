@@ -109,14 +109,38 @@
 			{% for appointment in appointments %}
 				{% if appointment.status == "completed" %}
 					{% set state.has_completed = true %}
-					<div class="appointment-item-card d-flex justify-content-between align-items-center">
-						<div>
-							<h6 class="mb-1">{{ appointment.patient.full_name }}</h6>
-							<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
+					{% set remark_collapse_id = "remark-form-" ~ appointment.id %}
+					<div class="appointment-item-card">
+						<div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+							<div>
+								<h6 class="mb-1">{{ appointment.patient.full_name }}</h6>
+								<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
+							</div>
+							<span class="badge text-bg-secondary">completed</span>
 						</div>
-						<div class="appointment-actions">
+
+						<div class="remark-block mt-3">
+							<div class="remark-label">Doctor Remark</div>
+							{% if appointment.remark %}
+								<div class="remark-text">{{ appointment.remark }}</div>
+							{% else %}
+								<div class="remark-empty">No remark added yet</div>
+							{% endif %}
+						</div>
+
+						<div class="appointment-actions mt-3">
 							<a href="{{ url_for('doctor.patient_details', appointment_id=appointment.id) }}" class="btn btn-sm btn-outline-dark">View Patient Details</a>
-							<span class="small text-muted">No actions available</span>
+							<button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{ remark_collapse_id }}" aria-expanded="false" aria-controls="{{ remark_collapse_id }}">
+								{% if appointment.remark %}Edit Remark{% else %}Add Remark{% endif %}
+							</button>
+						</div>
+
+						<div class="collapse mt-3" id="{{ remark_collapse_id }}">
+							<form method="post" action="{{ url_for('doctor.save_appointment_remark', appointment_id=appointment.id) }}" class="remark-form">
+								<label class="form-label mb-1" for="remark-{{ appointment.id }}">Prescription / Remark</label>
+								<textarea class="form-control" id="remark-{{ appointment.id }}" name="remark" rows="4" placeholder="Add prescription or follow-up instructions...">{{ appointment.remark or '' }}</textarea>
+								<button class="btn btn-sm btn-primary mt-2" type="submit">Save Remark</button>
+							</form>
 						</div>
 					</div>
 				{% endif %}

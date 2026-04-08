@@ -45,7 +45,7 @@
 					<button type="submit" class="btn auth-primary-btn w-100">Sign In</button>
 				</form>
 
-				<form id="register-form" method="post" novalidate>
+				<form id="register-form" method="post" enctype="multipart/form-data" novalidate>
 					<div class="mb-3">
 						<label for="register_full_name" class="form-label">Full Name</label>
 						<input type="text" class="form-control" id="register_full_name" name="full_name" required>
@@ -70,6 +70,16 @@
 						<label for="register_confirm_password" class="form-label">Confirm Password</label>
 						<input type="password" class="form-control" id="register_confirm_password" name="confirm_password" required>
 					</div>
+					<div class="mb-3 d-none" id="doctor-document-group">
+						<label for="doctor_document" class="form-label">Doctor Document (PDF/JPG/PNG)</label>
+						<input
+							type="file"
+							class="form-control"
+							id="doctor_document"
+							name="doctor_document"
+							accept=".pdf,.jpg,.png,application/pdf,image/jpeg,image/png"
+						>
+					</div>
 					<button type="submit" class="btn auth-primary-btn w-100">Register</button>
 				</form>
 			</div>
@@ -88,6 +98,22 @@
 	const registerBtn = document.getElementById('toggle-register');
 	const loginForm = document.getElementById('login-form');
 	const registerForm = document.getElementById('register-form');
+	const roleField = document.getElementById('register_role');
+	const doctorDocumentGroup = document.getElementById('doctor-document-group');
+	const doctorDocumentInput = document.getElementById('doctor_document');
+
+	function syncDoctorDocumentField() {
+		if (!roleField || !doctorDocumentGroup || !doctorDocumentInput) {
+			return;
+		}
+
+		const isDoctor = roleField.value === 'doctor';
+		doctorDocumentGroup.classList.toggle('d-none', !isDoctor);
+		doctorDocumentInput.required = isDoctor;
+		if (!isDoctor) {
+			doctorDocumentInput.value = '';
+		}
+	}
 
 	function showLogin() {
 		loginBtn.classList.add('active');
@@ -101,10 +127,15 @@
 		loginBtn.classList.remove('active');
 		registerForm.classList.remove('d-none');
 		loginForm.classList.add('d-none');
+		syncDoctorDocumentField();
 	}
 
 	loginBtn.addEventListener('click', showLogin);
 	registerBtn.addEventListener('click', showRegister);
+	if (roleField) {
+		roleField.addEventListener('change', syncDoctorDocumentField);
+	}
+	syncDoctorDocumentField();
 })();
 </script>
 {% endblock %}

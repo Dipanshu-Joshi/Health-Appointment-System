@@ -59,6 +59,14 @@
 								<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
 								<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
 								<div class="small mt-1">Reason: {{ appointment.reason }}</div>
+								<div class="remark-block mt-2">
+									<div class="remark-label">Doctor Remark</div>
+									{% if appointment.remark %}
+										<div class="remark-text">{{ appointment.remark }}</div>
+									{% else %}
+										<div class="remark-empty">No remark added yet</div>
+									{% endif %}
+								</div>
 							</div>
 							<div>
 								{% if appointment.status == "approved" %}
@@ -96,19 +104,30 @@
 			{% for appointment in appointments %}
 				{% if appointment.is_past %}
 					{% set state.has_past = true %}
-					<div class="appointment-item-card d-flex justify-content-between align-items-center">
-						<div>
-							<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
-							<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
+					<div class="appointment-item-card">
+						<div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+							<div>
+								<h6 class="mb-1">Dr. {{ appointment.doctor.full_name }}</h6>
+								<div class="small text-muted">{{ format_appointment_ist(appointment.appointment_date, appointment.appointment_time) }} IST</div>
+							</div>
+							<div>
+								{% if appointment.status == "completed" %}
+									<span class="badge text-bg-secondary">completed</span>
+									<div class="small text-muted mt-1">Appointment Completed</div>
+								{% elif appointment.status == "cancelled" %}
+									<span class="badge text-bg-danger">cancelled</span>
+								{% else %}
+									<span class="badge text-bg-secondary">past</span>
+								{% endif %}
+							</div>
 						</div>
-						<div>
-							{% if appointment.status == "completed" %}
-								<span class="badge text-bg-secondary">completed</span>
-								<div class="small text-muted mt-1">Appointment Completed</div>
-							{% elif appointment.status == "cancelled" %}
-								<span class="badge text-bg-danger">cancelled</span>
+
+						<div class="remark-block mt-3">
+							<div class="remark-label">Doctor Remark</div>
+							{% if appointment.remark %}
+								<div class="remark-text">{{ appointment.remark }}</div>
 							{% else %}
-								<span class="badge text-bg-secondary">past</span>
+								<div class="remark-empty">No remark added yet</div>
 							{% endif %}
 						</div>
 					</div>

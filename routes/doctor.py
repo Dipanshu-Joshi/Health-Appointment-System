@@ -111,6 +111,29 @@ def complete_appointment(appointment_id: int):
     return redirect(url_for("doctor.dashboard"))
 
 
+@doctor_bp.route("/appointments/<int:appointment_id>/remark", methods=["POST"])
+@login_required
+def save_appointment_remark(appointment_id: int):
+    if current_user.role != "doctor":
+        flash("Access denied: Doctor account required.", "danger")
+        return redirect(url_for("home"))
+
+    appointment = Appointment.query.filter_by(id=appointment_id, doctor_id=current_user.id).first_or_404()
+    if appointment.status != "completed":
+        flash("Remarks can be added only for completed appointments.", "warning")
+        return redirect(url_for("doctor.dashboard"))
+
+    remark = request.form.get("remark", "").strip()
+    if not remark:
+        flash("Remark cannot be empty.", "warning")
+        return redirect(url_for("doctor.dashboard"))
+
+    appointment.remark = remark
+    db.session.commit()
+    flash("Doctor remark saved successfully.", "success")
+    return redirect(url_for("doctor.dashboard"))
+
+
 @doctor_bp.route("/patient-details/<int:appointment_id>")
 @login_required
 def patient_details(appointment_id: int):

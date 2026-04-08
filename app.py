@@ -109,6 +109,18 @@ def create_app() -> Flask:
             db.session.rollback()
 
         try:
+            db.session.execute(text("ALTER TABLE appointments ADD COLUMN remark TEXT"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        try:
+            db.session.execute(text("ALTER TABLE users ADD COLUMN doctor_document VARCHAR(255)"))
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+
+        try:
             db.session.execute(text("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255)"))
             db.session.commit()
         except Exception:

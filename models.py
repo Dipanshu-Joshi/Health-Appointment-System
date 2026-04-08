@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     profile_image = db.Column(db.String(255), nullable=True)
+    doctor_document = db.Column(db.String(255), nullable=True)
     role = db.Column(db.String(20), nullable=False)  # patient | doctor | admin
     doctor_status = db.Column(
         db.String(20),
@@ -48,6 +49,7 @@ class Appointment(db.Model):
     appointment_date = db.Column(db.Date, nullable=False)
     appointment_time = db.Column(db.Time, nullable=False)
     reason = db.Column(db.Text, nullable=False)
+    remark = db.Column(db.Text, nullable=True)
     room_id = db.Column(db.String(120), nullable=True)
     status = db.Column(
         db.String(30),

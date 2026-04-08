@@ -1,11 +1,22 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+import os
+import uuid
+
+from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_user, logout_user
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from app import db
 from models import User
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/auth")
+
+ALLOWED_DOCTOR_DOC_EXTENSIONS = {".pdf", ".jpg", ".png"}
+
+
+def _is_allowed_doctor_document(filename: str) -> bool:
+    _, ext = os.path.splitext(filename.lower())
+    return ext in ALLOWED_DOCTOR_DOC_EXTENSIONS
 
 
 def _redirect_by_role(role: str):
@@ -69,6 +80,25 @@ def register():
             flash("Passwords do not match.", "danger")
             return render_template("auth/register.html")
 
+        doctor_document_path = None
+        if role == "doctor":
+            doctor_document = request.files.get("doctor_document")
+            if not doctor_document or not doctor_document.filename:
+                flash("Document required", "danger")
+                return render_template("auth/register.html")
+
+            original_name = secure_filename(doctor_document.filename)
+            if not original_name or not _is_allowed_doctor_document(original_name):
+                flash("Only PDF, JPG, and PNG files are allowed.", "danger")
+                return render_template("auth/register.html")
+
+            _, ext = os.path.splitext(original_name)
+            unique_filename = f"doctor_doc_{uuid.uuid4().hex}{ext.lower()}"
+            upload_dir = os.path.join(current_app.static_folder, "uploads")
+            os.makedirs(upload_dir, exist_ok=True)
+            doctor_document.save(os.path.join(upload_dir, unique_filename))
+            doctor_document_path = f"uploads/{unique_filename}"
+
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
             flash("Email is already registered.", "warning")
@@ -81,6 +111,7 @@ def register():
             password_hash=generate_password_hash(password),
             role=role,
             doctor_status=doctor_status,
+            doctor_document=doctor_document_path,
         )
         db.session.add(new_user)
         db.session.commit()
